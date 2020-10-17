@@ -1,0 +1,33 @@
+{
+    "name": "guzaba-platform/settings",
+    "type": "guzaba-platform-component",
+    "description": "Settings component for Guzaba Platform",
+    "keywords": ["settings"],
+    "homepage": "https://github.com/AzonMedia/component-settings",
+    "license": "MIT",
+    "minimum-stability": "dev",
+    "authors": [
+        {
+            "name": "Vesko Kenashkov",
+            "email": "kenashkov@azonmedia.com",
+            "homepage": "http://azonmedia.com",
+            "role": "Developer"
+        }
+    ],
+    "require": {
+        "composer/composer": "^1.3",
+        "guzaba-platform/guzaba-platform-installer": "dev-master",
+        "guzaba-platform/components-base": "dev-master",
+        "guzaba-platform/guzaba-platform": "dev-master",
+	"guzaba-platform/catalog": "dev-master",
+        "azonmedia/filesystem" : "dev-master"
+    },
+    "require-dev": {
+        "composer/composer": "^1.3"
+    },
+    "autoload": {
+        "psr-4": {
+            "GuzabaPlatform\\Settings\\": "app/src/"
+        }
+    }
+}
