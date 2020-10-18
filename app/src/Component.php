@@ -58,7 +58,7 @@ class Component extends BaseComponent implements ComponentInterface, ComponentIn
                 //'additional_template' => '@GuzabaPlatform.Settings/SettingsNavigationHook.vue',//here the list of classes will be expanded
             ],
         ];
-        $FrontendRouter->{'/admin'}->add('app-server-monitor', '@GuzabaPlatform.Settings/Settings.vue' ,$additional);
+        $FrontendRouter->{'/admin'}->add('settings', '@GuzabaPlatform.Settings/SettingsAdmin.vue' ,$additional);
     }
 
 }
