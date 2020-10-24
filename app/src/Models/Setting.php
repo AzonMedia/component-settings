@@ -23,6 +23,7 @@ class Setting extends BaseActiveRecord
 
         'object_name_property'  => 'setting_name',//required by BaseActiveRecord::get_object_name_property()
 
+        //'no_permissions'    => true,
     ];
 
     protected const CONFIG_RUNTIME = [];

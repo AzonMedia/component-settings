@@ -4,7 +4,7 @@
             <div id="data" class="tab">
                 <h3>Settings <b-button variant="success" @click="show_update_modal('post', newObject)" size="sm">Create New</b-button> </h3>
 
-                <!-- ======================= ROLES LISTING ================== -->
+                <!-- ======================= SETTINGS LISTING ================== -->
                 <template>
                     <b-form @submit="submitSearch">
                         <b-table striped show-empty :items="items" :fields="fields" empty-text="No records found!" @row-clicked="row_click_handler" no-local-sorting @sort-changed="sortingChanged" head-variant="dark" table-hover>
@@ -14,13 +14,6 @@
                                     <!-- <template v-if="field.key=='meta_object_uuid'"> -->
                                     <template v-if="field.key == 'action'">
                                         <b-button size="sm" variant="outline-primary" type="submit" @click="search()">Search</b-button>
-                                    </template>
-                                    <template v-else-if="field.key == 'granted_roles_names'">
-                                        <!-- <b-button size="sm" variant="outline-primary" type="submit" @click="search()">Search</b-button> -->
-                                        <!-- <v-select v-model="searchValues[field.key]" label="role_name" :options="roles"></v-select> -->
-                                        <!-- while the column is named inherits_role_name actually object_meta_uuid is provided so the field name should be inherits_role_uuid -->
-                                        <!-- :reduce makes return only the uuid not the whole object role_name:meta_object_uuid -->
-                                        <v-select v-model="searchValues['inherits_roles_uuids']" label="role_name" :reduce="role_name => role_name.meta_object_uuid" :options="roles"></v-select>
                                     </template>
                                     <template v-else>
                                         <b-form-input v-model="searchValues[field.key]" type="search" :placeholder="field.label"></b-form-input>
@@ -60,28 +53,7 @@
                         <!-- <p>{{actionTitle}}</p> -->
                         <!-- apply filter "humanize" on the label -->
                         <b-form-group class="form-group" v-for="(value, index) in putValues" v-if="index!='meta_object_uuid'" v-bind:key="index" :label="index + ':' | humanize" label-align="right" label-cols="3">
-
-                            <template v-if="index === 'granted_roles_uuids'">
-                                <!-- show checkboxes with roles -->
-                                <!--
-                                <template v-for="(Role, index) in roles">
-                                </template> -->
-                                <!-- <b-form-group v-for="(Role, index) in roles" :label="Role.role_name" label-align="right">
-                                </b-form-group> -->
-                                <b-form-checkbox-group id="granted_roles" v-model="granted_roles" name="granted_roles">
-                                    <!-- <b-form-checkbox v-for="(Role, index) in roles" :value="Role.meta_object_uuid">{{Role.role_name}}</b-form-checkbox> -->
-                                    <!-- because the inherits_role_uuid is not included in the record_properties, only role name, the checkboxes will be driven by name (which is also unique) -->
-                                    <!-- <b-form-checkbox v-for="(Role, index) in roles" :value="Role.role_name" v-bind:key="Role.role_name">{{Role.role_name}}</b-form-checkbox> -->
-                                    <b-form-checkbox v-for="(Role, index) in roles" :value="Role.meta_object_uuid" v-bind:key="Role.role_name">{{Role.role_name}}</b-form-checkbox>
-                                    <!-- {{ putValues }} -->
-                                    <!-- {{granted_roles}} -->
-                                </b-form-checkbox-group>
-
-                            </template>
-                            <!-- <template v-else-if="index === 'role_is_user'">
-                                {{value}}
-                            </template> -->
-                            <template v-else-if="action === 'delete'">
+                            <template v-if="action === 'delete'">
                                 <b-form-input :value="value" disabled></b-form-input>
                             </template>
                             <template v-else>
@@ -130,7 +102,7 @@
                             :busy.sync="isBusy_permissions"
                     >
 
-                        <!-- permision_uuid is just a value that can not be used here as it is only for the first row/role -->
+                        <!-- permision_uuid is just a value that can not be used here as it is only for the first row/setting -->
                         <template v-slot:[setSlotCell(action_name)]="row" v-for="(permission_uuid, action_name) in items_permissions[0].permissions">
                             <b-form-checkbox :value="row.item.permissions[action_name] ? row.item.permissions[action_name] : 0" unchecked-value="" @change="toggle_permission(row.item, action_name, row.item.permissions[action_name] ? 1 : 0)" v-model="row.item.permissions[action_name]"></b-form-checkbox>
                         </template>
@@ -206,13 +178,13 @@
                 fields_permissions: [],
                 fields_permissions_base: [
                     {
-                        key: 'role_id',
-                        label: 'Role ID',
+                        key: 'setting_id',
+                        label: 'Setting ID',
                         sortable: true
                     },
                     {
-                        key: 'role_name',
-                        label: 'Role Name',
+                        key: 'setting_name',
+                        label: 'Setting Name',
                         sortable: true
                     },
                 ],
@@ -223,10 +195,7 @@
 
                 newObject: {},
 
-                /** The non-user roles */
-                roles: [],
-                /** Used by the modification modal */
-                granted_roles: [],
+                settings: [],
             }
         },
         methods: {
@@ -240,17 +209,7 @@
                 this.search()
             },
 
-            get_roles_for_dropdown() {
-                this.$http.get('/admin/users/roles')
-                    .then(resp => {
-                        this.roles = resp.data.roles;
-                    })
-                    .catch(err => {
-                        this.$bvToast.toast('Roles could not be loaded due to server error.' + '\n' + err.response.data.message)
-                    });
-            },
-
-            get_roles() {
+            get_settings() {
 
                 this.fields = [];
                 this.newObject = {};
@@ -266,7 +225,7 @@
 
                 let self = this;
 
-                this.$http.get('/admin/roles/' + self.currentPage + '/' + self.limit + '/'+ searchValuesToPass + '/' + this.sortBy + '/' + this.sortDesc)
+                this.$http.get('/admin/settings/' + self.currentPage + '/' + self.limit + '/'+ searchValuesToPass + '/' + this.sortBy + '/' + this.sortDesc)
                     .then(resp => {
                         // self.fields.push({
                         //     label: 'UUID',
@@ -288,10 +247,7 @@
                         });
 
                         self.items = resp.data.data;
-                        for (let aa = 0; aa < this.items.length; aa++) {
-                            this.items[aa]['granted_roles_names'] = this.items[aa]['granted_roles_names'].join(',');
-                            //this.items[aa]['granted_roles_uuids'] = this.items[aa]['granted_roles_uuids'].join(',');
-                        }
+
                         self.totalItems = resp.data.totalItems;
 
                         self.record_properties = resp.data.record_properties;
@@ -299,20 +255,20 @@
                     })
                     .catch(err => {
                         //console.log(err);
-                        this.$bvToast.toast('Roles data could not be loaded due to server error.' + '\n' + err.response.data.message)
+                        this.$bvToast.toast('Settings data could not be loaded due to server error.' + '\n' + err.response.data.message)
                     });
             },
 
             search() {
                 this.reset_params();
-                this.get_roles();
+                this.get_settings();
             },
 
             //reset_params(className){
             reset_params() {
                 this.currentPage = 1;
                 this.totalItems = 0;
-                this.sortBy = 'role_name';
+                this.sortBy = 'setting_name';
             },
 
             row_click_handler(record, index) {
@@ -338,11 +294,9 @@
                     }
                 }
 
-                this.granted_roles = this.putValues.granted_roles_uuids;
-
                 switch (this.action) {
                     case 'delete' :
-                        this.modalTitle = 'Deleting role';
+                        this.modalTitle = 'Deleting setting';
                         this.modalVariant = 'danger';
                         this.ButtonVariant = 'danger';
                         //this.actionTitle = 'Are you sure, you want to delete object:';
@@ -350,14 +304,14 @@
                         break;
 
                     case 'put' :
-                        this.modalTitle = 'Edit role';
+                        this.modalTitle = 'Edit setting';
                         this.modalVariant = 'success';
                         this.ButtonVariant = 'success';
                         this.ButtonTitle = 'Save';
                         break;
 
                     case 'post' :
-                        this.modalTitle = 'Create new role';
+                        this.modalTitle = 'Create new setting';
                         this.modalVariant = 'success';
                         this.ButtonVariant = 'success';
                         this.ButtonTitle = 'Save';
@@ -365,7 +319,7 @@
                 }
 
                 if (!this.crudObjectUuid && this.action != "post") {
-                    this.requestError = "This role has no meta data!";
+                    this.requestError = "This setting has no meta data!";
                     this.actionState = true;
                     this.loadingState = false;
                     this.ButtonTitle = 'Ok';
@@ -387,36 +341,27 @@
                     let self = this;
                     let sendValues = {};
 
-                    //because of the custom login needed for handling the granted roles the ActiveRecordDefaultControllercan not be used
-                    //let url = '/admin/crud-operations';
-                    let url = '/admin/roles/role';
-
-                    this.putValues.granted_roles_uuids = this.granted_roles;
+                    let url = '/admin/settings/setting';
 
                     switch(this.action) {
                         case 'delete' :
-                            self.loadingMessage = 'Deleting role with uuid: ' + this.crudObjectUuid;
+                            self.loadingMessage = 'Deleting setting with uuid: ' + this.crudObjectUuid;
                             url += '/' + this.crudObjectUuid;
                             break;
 
                         case 'put' :
-                            self.loadingMessage = 'Saving role with uuid: ' + this.crudObjectUuid;
+                            self.loadingMessage = 'Saving setting with uuid: ' + this.crudObjectUuid;
                             url += '/' + this.crudObjectUuid;
                             sendValues = this.putValues;
                             delete sendValues['meta_object_uuid'];
                             break;
 
                         case 'post' :
-                            self.loadingMessage = 'Saving new role';
+                            self.loadingMessage = 'Saving new setting';
                             sendValues = this.putValues;
                             delete sendValues['meta_object_uuid'];
                             break;
                     }
-                    //sendValues.crud_class_name = this.selectedClassName.split('\\').join('-');
-                    //sendValues.crud_class_name = 'GuzabaPlatform\\Platform\\Authorization\\Models\\Role';
-                    //sendValues.crud_class_name = 'Guzaba2\\Authorization\\Role';
-                    //this is not needed
-                    //due to the Roles management the basic CRUD operation can not be used and a custom controller is needed
 
                     this.$http({
                         method: this.action,
@@ -427,7 +372,7 @@
                             console.log(resp);
                             this.requestError = '';
                             this.successfulMessage = resp.data.message;
-                            this.get_roles()
+                            this.get_settings()
                         })
                         .catch(err => {
                             if (err.response.data.message) {
@@ -449,15 +394,14 @@
                 this.sortBy = ctx.sortBy;
                 this.sortDesc = ctx.sortDesc ? 1 : 0;
 
-                this.get_roles();
+                this.get_settings();
             }
         },
         props: {
             contentArgs: {}
         },
         mounted() {
-            this.get_roles();
-            this.get_roles_for_dropdown();
+            this.get_settings();
 
         },
     };
