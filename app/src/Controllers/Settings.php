@@ -66,7 +66,7 @@ class Settings extends BaseController
         $struct['editable_record_properties'] = \GuzabaPlatform\Settings\Controllers\Setting::EDITABLE_RECORD_PROPERTIES;
 
         //$struct['data'] = Users::get_data_by((array) $search, $offset, $limit, $use_like = TRUE, $sort_by, (bool) $sort_desc, $total_found_rows);
-        $struct['data'] = \GuzabaPlatform\Settings\Models\Setting::get_data_by((array) $search, $offset, $limit = 0, true, $sort_by, $sort_desc, $total_found_rows);
+        $struct['data'] = \GuzabaPlatform\Settings\Models\Setting::get_data_by((array) $search, $offset, $limit, true, $sort_by, $sort_desc, $total_found_rows);
 
         $struct['totalItems'] = $total_found_rows;
         if ($limit) {

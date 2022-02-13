@@ -30,7 +30,8 @@
                     </b-form>
                 </template>
 
-                <b-pagination v-if="totalItems > limit" size="md" :total-rows="totalItems" v-model="currentPage" :per-page="limit"  align="center"></b-pagination>
+                <!-- <b-pagination v-if="totalItems > limit" size="md" :total-rows="totalItems" v-model="currentPage" :per-page="limit"  align="center"></b-pagination> -->
+                <b-pagination-nav :link-gen="linkGen" :number-of-pages="numberOfPages" use-router></b-pagination-nav>
 
                 <!-- ======================= MODAL UPDATE & DELETE ================== -->
                 <b-modal
@@ -139,6 +140,8 @@
                 currentPage: 1,
                 totalItems: 0,
 
+                numberOfPages: 1,
+
                 //selectedClassName: '',
                 //selectedClassNameShort: '',
                 sortBy: 'none',
@@ -199,6 +202,15 @@
             }
         },
         methods: {
+
+            /**
+             * @param {int} pageNum
+             * @return {string}
+             */
+            linkGen(pageNum) {
+                return pageNum === 1 ? '?' : `?page=${pageNum}`
+            },
+
             // https://stackoverflow.com/questions/58140842/vue-and-bootstrap-vue-dynamically-use-slots
             setSlotCell(action_name) {
                 return `cell(${action_name})`;
@@ -210,6 +222,12 @@
             },
 
             get_settings() {
+
+                if (typeof this.$route.query.page !== 'undefined') {
+                    this.currentPage = this.$route.query.page;
+                } else {
+                    this.currentPage = 1;
+                }
 
                 this.fields = [];
                 this.newObject = {};
@@ -223,9 +241,8 @@
                 let objJsonStr = JSON.stringify(this.searchValues);//this is passed as GET so needs to be stringified
                 let searchValuesToPass = encodeURIComponent(window.btoa(objJsonStr));
 
-                let self = this;
-
-                this.$http.get('/admin/settings/' + self.currentPage + '/' + self.limit + '/'+ searchValuesToPass + '/' + this.sortBy + '/' + this.sortDesc)
+                let url = '/admin/settings/' + this.currentPage + '/' + this.limit + '/'+ searchValuesToPass + '/' + this.sortBy + '/' + this.sortDesc;
+                this.$http.get(url)
                     .then(resp => {
                         // self.fields.push({
                         //     label: 'UUID',
@@ -234,27 +251,27 @@
                         // });
                         for (let i in resp.data.listing_columns) {
                             let key = resp.data.listing_columns[i];
-                            self.fields.push({
+                            this.fields.push({
                                 key: key,
                                 sortable: true
                             });
-                            self.newObject[key] = '';
+                            this.newObject[key] = '';
                         }
-                        self.fields.push({
+                        this.fields.push({
                             label: 'Action',
                             key: 'action',
                             sortable: true
                         });
 
-                        self.items = resp.data.data;
+                        this.items = resp.data.data;
 
-                        self.totalItems = resp.data.totalItems;
+                        this.totalItems = resp.data.totalItems;
+                        this.numberOfPages = Math.ceil (this.totalItems / this.limit );
 
-                        self.record_properties = resp.data.record_properties;
-                        self.editable_record_properties = resp.data.editable_record_properties;
+                        this.record_properties = resp.data.record_properties;
+                        this.editable_record_properties = resp.data.editable_record_properties;
                     })
                     .catch(err => {
-                        //console.log(err);
                         this.$bvToast.toast('Settings data could not be loaded due to server error.' + '\n' + err.response.data.message)
                     });
             },
@@ -369,7 +386,6 @@
                         data: sendValues
                     })
                         .then(resp => {
-                            console.log(resp);
                             this.requestError = '';
                             this.successfulMessage = resp.data.message;
                             this.get_settings()
@@ -399,6 +415,11 @@
         },
         props: {
             contentArgs: {}
+        },
+        watch: {
+            $route (to, from) { // needed because by default no class is loaded and when it is loaded the component for the two routes is the same.
+                this.get_settings();
+            }
         },
         mounted() {
             this.get_settings();
