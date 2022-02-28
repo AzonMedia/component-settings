@@ -6,6 +6,7 @@ namespace GuzabaPlatform\Settings\Models;
 
 use GuzabaPlatform\Catalog\Base\Interfaces\ItemInterface;
 use GuzabaPlatform\Platform\Application\BaseActiveRecord;
+use GuzabaPlatform\Settings\Interfaces\SettingInterface;
 
 /**
  * Class Setting
@@ -14,7 +15,7 @@ use GuzabaPlatform\Platform\Application\BaseActiveRecord;
  * @property string $setting_name
  * @property mixed $setting_value
  */
-class Setting extends BaseActiveRecord
+class Setting extends BaseActiveRecord implements SettingInterface
 {
 
     protected const CONFIG_DEFAULTS = [
